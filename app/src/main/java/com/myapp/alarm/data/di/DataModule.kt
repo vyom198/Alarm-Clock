@@ -18,7 +18,8 @@ import javax.inject.Singleton
 @InstallIn (SingletonComponent::class)
 object DataModule {
 
-   @Provides
+
+    @Provides
    @Singleton
    fun provideDatabase (@ApplicationContext context: Context)
    : AlarmDatabase {
