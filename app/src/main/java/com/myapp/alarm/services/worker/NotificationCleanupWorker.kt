@@ -9,8 +9,10 @@ import androidx.work.CoroutineWorker
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.myapp.alarm.data.local.AlarmDao
+import com.myapp.alarm.data.model.Alarm
 import com.myapp.alarm.util.Constants
 import com.myapp.alarm.util.NotificationHelper
+import com.myapp.alarm.util.pickedTimeformat
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +67,7 @@ class NotificationCleanupWorker @AssistedInject constructor(
                 channelId = Constants.CHANNEL_ID,
                 notificationId = Random.nextInt(),
                 title = alarmLabel.toString(),
-                content = "alarm is ringing "
+                content = "Alarm Is Ringing "
             )
         }
     }

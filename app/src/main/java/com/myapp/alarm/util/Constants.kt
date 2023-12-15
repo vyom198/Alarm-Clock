@@ -12,7 +12,6 @@ object Constants {
         "notification_alarm_permission_not_available"
     const val KEY_LAUNCH_NAME = "key_alarm_name"
     const val KEY_LAUNCH_ID = "key_alarm_name"
-    const val TEN_MINUTES_IN_MILLIS = 600_000L
     const val REMINDER_SOUND_DURATION = 10_000L
     const val ALARM_NOTIFICATION_AND_CLEANUP = "alarm_notification_and_cleanup"
     const val SET_ALARM_AFTER_DEVICE_BOOT = "set_alarm_after_device_boot"

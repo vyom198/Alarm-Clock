@@ -14,6 +14,9 @@ import com.myapp.alarm.data.model.Alarm
 import com.myapp.alarm.services.broadcastReciever.AlarmBroadcastReciever
 import com.vanpra.composematerialdialogs.datetime.BuildConfig
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 class AlarmSchedulerImpl @Inject constructor(
@@ -128,11 +131,10 @@ class AlarmSchedulerImpl @Inject constructor(
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-         val alarmTime = alarm.time
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            alarmTime.toNanoOfDay(),
+            alarm.time.toEpochSecond(LocalDate.EPOCH, ZoneOffset.UTC),
             pendingIntent
         )
       return null

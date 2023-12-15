@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +29,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -59,7 +61,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "InlinedApi")
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AlarmScreen(
@@ -67,7 +69,10 @@ fun AlarmScreen(
 ) {
     val state by viewmodel.alarmstate.collectAsState()
     val  context = LocalContext.current
-    val alarm = viewmodel.alarm
+    var alarm = viewmodel.alarm
+     var addLabeldialog by remember {
+         mutableStateOf(false)
+     }
     var showReminderPermissionRationale: Boolean by remember {
         mutableStateOf(false)
     }
@@ -170,7 +175,8 @@ fun AlarmScreen(
                            {viewmodel.deleteAlarm(alarm)}, onToggle = { scheduled ->
                                viewmodel.updateAlarm(Alarm(id = alarm.id ,time=alarm.time, isScheduled = scheduled, isVibrate = true))
 
-                           }
+                           },
+
                            )
 
 
@@ -188,8 +194,8 @@ fun AlarmScreen(
             dialogState = timeDialogState,
             buttons = {
                 positiveButton(text = "Ok") {
-                   val alarm = Alarm(time = pickedTime, isScheduled = true , isVibrate = true)
-                    viewmodel.insertAlarm(alarm)
+                        val alarm = Alarm(time = pickedTime, isScheduled = true , isVibrate = true)
+                        viewmodel.insertAlarm(alarm)
                 }
                 negativeButton(text = "Cancel"){
                     timeDialogState.hide()
@@ -275,17 +281,27 @@ fun ShowPermissionRationaleDialog(
 }
 
 
+
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AlarmItem(alarm: Alarm, onclick : () -> Unit, onToggle:(Boolean)->Unit ){
+fun AlarmItem(alarm: Alarm, onclick : () -> Unit, onToggle:(Boolean)->Unit, ){
 
     Card(modifier = Modifier
         .fillMaxWidth()
         .padding(10.dp),) {
+
+//        Row(modifier = Modifier.padding(start = 0.5.dp), horizontalArrangement = Arrangement.Start, verticalAlignment = Alignment.CenterVertically) {
+//            IconButton(onClick = addLabel) {
+//                Icon(imageVector = Icons.Default.Add, contentDescription = "add label")
+//            }
+//            Text(text = "add label", fontSize = 14.sp, fontWeight = FontWeight.ExtraLight)
+//        }
+
         Row(modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(text = pickedTimeformat(alarm.time), fontSize = 19.sp, fontWeight = FontWeight.Bold,  )
+            Text(text = pickedTimeformat(alarm.time), fontSize = 35.sp,
+                fontWeight = FontWeight.Bold,)
             IconButton(onClick = onclick) {
                 Icon(imageVector = Icons.Default.Delete, contentDescription = null)
             }
