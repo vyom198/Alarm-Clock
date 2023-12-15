@@ -10,11 +10,11 @@ import kotlin.random.Random
 
 @Entity(tableName = "Alarm")
 data class Alarm (
-     @PrimaryKey(autoGenerate = true )
+    @PrimaryKey(autoGenerate = true )
      val id : Int = 0,
-     val time : LocalTime,
-     val label : String? = null,
-     val isScheduled : Boolean,
-     val isVibrate : Boolean,
+    val time : LocalTime,
+    val label : String? = null,
+    var isScheduled : Boolean,
+    val isVibrate : Boolean,
 
-     )
+    )

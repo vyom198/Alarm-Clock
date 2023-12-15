@@ -7,6 +7,9 @@ import com.myapp.alarm.data.local.AlarmDatabase
 import com.myapp.alarm.data.repo.AlarmRepoImpl
 import com.myapp.alarm.domain.repo.AlarmRepo
 import com.myapp.alarm.domain.usecase.GetAllAlarmUseCase
+import com.myapp.alarm.domain.usecase.InsertAlarmUsecase
+import com.myapp.alarm.domain.usecase.UpdateAlarmUsecase
+import com.myapp.alarm.util.AlarmScheduler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,5 +45,13 @@ object DataModule {
     fun provideGetAllAlarmsusecase (alarmRepo: AlarmRepo):GetAllAlarmUseCase{
         return GetAllAlarmUseCase(alarmRepo)
     }
+    @Provides
+    fun provideUpdateAlarmusecase (alarmRepo: AlarmRepo, alarmScheduler: AlarmScheduler):UpdateAlarmUsecase{
+        return UpdateAlarmUsecase(alarmRepo=alarmRepo, alarmScheduler = alarmScheduler)
+    }
+    @Provides
+    fun provideinsertAlarmUsecase (alarmRepo: AlarmRepo,alarmScheduler: AlarmScheduler):InsertAlarmUsecase{
+        return InsertAlarmUsecase(alarmRepo = alarmRepo,alarmScheduler = alarmScheduler)
 
+    }
 }

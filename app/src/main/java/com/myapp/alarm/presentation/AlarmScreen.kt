@@ -1,8 +1,13 @@
 package com.myapp.alarm.presentation
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,6 +33,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -39,7 +46,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.myapp.alarm.R
 import com.myapp.alarm.data.model.Alarm
+import com.myapp.alarm.util.AlarmPermissionContract
+import com.myapp.alarm.util.Constants
+import com.myapp.alarm.util.openAppSettings
+import com.myapp.alarm.util.pickedTimeformat
 import com.vanpra.composematerialdialogs.MaterialDialog
 import com.vanpra.composematerialdialogs.datetime.time.timepicker
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
@@ -54,6 +66,73 @@ fun AlarmScreen(
     viewmodel: AlarmViewmodel
 ) {
     val state by viewmodel.alarmstate.collectAsState()
+    val  context = LocalContext.current
+    val alarm = viewmodel.alarm
+    var showReminderPermissionRationale: Boolean by remember {
+        mutableStateOf(false)
+    }
+
+    var showNotificationPermissionRationale: Boolean by remember {
+        mutableStateOf(false)
+    }
+
+    var isNotificationPermissionDeclined: Boolean by remember {
+        mutableStateOf(false)
+    }
+
+    val scheduleExactAlarmPermissionLauncher = rememberLauncherForActivityResult(
+        contract = AlarmPermissionContract(),
+        onResult = {isGranted->
+            if (isGranted){
+                alarm.let {
+                    viewmodel.insertAlarm(it)
+                }
+            }
+
+        }
+    )
+    val postNotificationsPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                alarm.let {
+                    viewmodel.insertAlarm(it)
+                }
+            } else {
+                isNotificationPermissionDeclined = true
+            }
+        }
+    )
+    LaunchedEffect(key1 = true) {
+        viewmodel.eventflow.collect { event ->
+            when (event) {
+                is AlarmScreenEvent.AlarmSetSuccessfully -> {
+
+                }
+
+                is AlarmScreenEvent.AlarmNotSet -> {
+
+                }
+
+                is AlarmScreenEvent.PermissionToSetReminderNotGranted -> {
+                    showReminderPermissionRationale = true
+                }
+
+                AlarmScreenEvent.PermissionToSendNotificationsNotGranted -> {
+                    showNotificationPermissionRationale = true
+                }
+
+                AlarmScreenEvent.PermissionsToSendNotificationsAndSetReminderNotGranted -> {
+                    showReminderPermissionRationale = true
+                    showNotificationPermissionRationale = true
+                }
+
+                else -> {}
+            }
+        }
+    }
+
+
     var pickedTime by remember {
         mutableStateOf(LocalTime.now())
     }
@@ -88,9 +167,11 @@ fun AlarmScreen(
                        items(alarmlist){alarm->
 
                            AlarmItem (alarm, onclick =
-                           {viewmodel.deleteAlarm(alarm)}, onToggle = {
-                               viewmodel.insertAlarm(alarm.copy(isScheduled = it))
-                           })
+                           {viewmodel.deleteAlarm(alarm)}, onToggle = { scheduled ->
+                               viewmodel.updateAlarm(Alarm(id = alarm.id ,time=alarm.time, isScheduled = scheduled, isVibrate = true))
+
+                           }
+                           )
 
 
 
@@ -116,30 +197,87 @@ fun AlarmScreen(
             }
         ) {
             timepicker(
-                initialTime = pickedTime,
+                initialTime = LocalTime.now(),
                 title = "Pick a time",
-                timeRange = LocalTime.MIDNIGHT..LocalTime.NOON
+                timeRange = LocalTime.MIDNIGHT ..LocalTime.MAX
             ) {
                 pickedTime = it
             }
         }
+        if (showReminderPermissionRationale) {
+            ShowPermissionRationaleDialog(
+                title = R.string.reminder_permission_required,
+                content = R.string.alarm_permission_rationale,
+                onDismissClick = {
+                    showReminderPermissionRationale = false
+                },
+                onConfirmClick = {
+                    showReminderPermissionRationale = false
+                    scheduleExactAlarmPermissionLauncher.launch(
+                        Manifest.permission.SCHEDULE_EXACT_ALARM
+                    )
+                },
+                modifier = Modifier
+            )
+        }
+
+        if (showNotificationPermissionRationale) {
+            ShowPermissionRationaleDialog(
+                title = R.string.notification_permission_required,
+                content = R.string.notification_permission_rationale,
+                onDismissClick = {
+                    showNotificationPermissionRationale = false
+                },
+                onConfirmClick = {
+                    showNotificationPermissionRationale = false
+                    if (!isNotificationPermissionDeclined) {
+                        postNotificationsPermissionLauncher.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    } else {
+                        (context as Activity).openAppSettings()
+                    }
+                }
+            )
+        }
+
+        if (isNotificationPermissionDeclined) {
+            ShowPermissionRationaleDialog(
+                title = R.string.notification_permission_required,
+                content = R.string.notification_permission_mandatory_rationale,
+                onDismissClick = {
+                },
+                onConfirmClick = {
+                    (context as Activity).openAppSettings()
+                }
+            )
+        }
     }
 
-
-
-
+}
+@Composable
+fun ShowPermissionRationaleDialog(
+    @StringRes
+    title: Int,
+    @StringRes
+    content: Int,
+    modifier: Modifier = Modifier,
+    onDismissClick: () -> Unit,
+    onConfirmClick: () -> Unit
+) {
+    AlertDialog(
+        onDismissClick = onDismissClick,
+        onConfirmClick = onConfirmClick,
+        title = title,
+        content = content,
+        modifier = modifier
+    )
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
-fun pickedTimeformat(time: LocalTime):String{
-    return DateTimeFormatter
-        .ofPattern("hh:mm a")
-        .format(time)
-}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun AlarmItem(alarm: Alarm, onclick : () -> Unit, onToggle:(Boolean)->Unit) {
+fun AlarmItem(alarm: Alarm, onclick : () -> Unit, onToggle:(Boolean)->Unit ){
 
     Card(modifier = Modifier
         .fillMaxWidth()

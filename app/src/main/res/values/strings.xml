@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Alarm</string>
+    <string name="notification_permission_required">Notification Permission is required</string>
+    <string name="notification_permission_mandatory_rationale">Allow notification permission to get notification of alarm</string>
+    <string name="notification_permission_rationale">Allow notification permission for Alarm</string>
+    <string name="reminder_permission_required">Exact Alarm permission Required</string>
+    <string name="alarm_permission_rationale">In order to set alarm Alarm Permission Required</string>
 </resources>

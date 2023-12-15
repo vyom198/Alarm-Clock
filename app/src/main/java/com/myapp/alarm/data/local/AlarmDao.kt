@@ -24,4 +24,7 @@ interface AlarmDao {
       @Update(onConflict = OnConflictStrategy.REPLACE)
         suspend fun  updateAlarm ( alarm: Alarm)
 
+       @Query("Update Alarm set isScheduled = :bool where id = :id")
+         suspend fun updateSchedule(bool : Boolean, id : Int)
+
 }
