@@ -1,4 +1,4 @@
-package com.myapp.alarm.util
+package com.myapp.alarm.services
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -12,11 +12,10 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import com.myapp.alarm.data.model.Alarm
 import com.myapp.alarm.services.broadcastReciever.AlarmBroadcastReciever
-import com.vanpra.composematerialdialogs.datetime.BuildConfig
+import com.myapp.alarm.util.AlarmScheduler
+import com.myapp.alarm.util.Constants
+import com.myapp.alarm.util.SchedulerState
 import dagger.hilt.android.qualifiers.ApplicationContext
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneOffset
 import javax.inject.Inject
 
 class AlarmSchedulerImpl @Inject constructor(
@@ -104,26 +103,36 @@ class AlarmSchedulerImpl @Inject constructor(
         }
     }
 
-    override fun cancelAlarm(id: Int) {
+    override fun cancelAlarm(alarm: Alarm) {
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            id.hashCode(),
-            Intent(context, AlarmBroadcastReciever::class.java),
+            alarm.id.hashCode(),
+            Intent(Constants.ACTION_ALARM_FIRED).apply {
+               setClass(context, AlarmBroadcastReciever::class.java)
+                putExtra(Constants.EXTRA_LABEL, alarm.label)
+                putExtra(Constants.EXTRA_NOTIFICATION_ID, alarm.id)
+            },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.cancel(
             pendingIntent
         )
+        Log.d("alarmschedule", "Canceled")
+
     }
 
+    override fun stopAlarm() {
+      context.stopService(Intent(context.applicationContext , AlarmForegroundService::class.java))
+    }
 
 
     @SuppressLint("NewApi")
     private fun makeAlarm (alarm: Alarm) :String?{
-        val intent = Intent(context,AlarmBroadcastReciever::class.java).apply {
-            putExtra(Constants.KEY_LAUNCH_NAME, alarm.label)
-            putExtra(Constants.KEY_LAUNCH_ID, alarm.id)
-            putExtra(Constants.AlarmScheduled,alarm.isScheduled)
+        val intent = Intent(Constants.ACTION_ALARM_FIRED).apply {
+            setClass(context , AlarmBroadcastReciever::class.java)
+            putExtra(Constants.EXTRA_LABEL, alarm.label)
+            putExtra(Constants.EXTRA_NOTIFICATION_ID, alarm.id)
+            Log.d("makeAlarm", alarm.id.toString())
         }
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -134,7 +143,7 @@ class AlarmSchedulerImpl @Inject constructor(
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            alarm.time.toEpochSecond(LocalDate.EPOCH, ZoneOffset.UTC),
+            alarm.getAlarmFirstTriggerMillis(),
             pendingIntent
         )
       return null

@@ -1,13 +1,12 @@
 package com.myapp.alarm.util
 
 import android.annotation.SuppressLint
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import com.myapp.alarm.MainActivity
 import com.myapp.alarm.R
@@ -40,33 +39,41 @@ class NotificationImpl @Inject constructor(
 
     }
 
-    override fun showNotification(
+    override fun createNotification(
         channelId: String,
-        notificationId :Int ,
+        notificationId: Long,
         title: String,
-        content: String
-    ) {
-          val intent = Intent(context,MainActivity::class.java)
-          val pendingIntent = PendingIntent.getActivity(
-              context,
-              0,
-              intent ,
-              PendingIntent.FLAG_IMMUTABLE
-          )
+        content: String,
+        context: Context
+    ):Notification {
+        val alarmDismissPendingIntent =
+            createAlarmDismissPendingIntent(context, pendingIntentId = notificationId)
+        val intent = Intent(context,MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            0,
+            intent ,
+            PendingIntent.FLAG_IMMUTABLE
+        )
         val builder = context?.let {
-           NotificationCompat.Builder(it ,channelId)
-               .setSmallIcon(R.drawable.ic_launcher_foreground)
-               .setContentTitle(title)
-               .setContentText(content)
-               .setPriority(NotificationCompat.PRIORITY_MAX)
-               .setContentIntent(pendingIntent)
-               .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            NotificationCompat.Builder(it ,channelId)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(title)
+                .setContentText(content)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setContentIntent(pendingIntent)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
 
-        }
+        }?.addAction(
+             1,
+            "Dismiss",
+              alarmDismissPendingIntent,
+        )?.build()
 
-        val notificationManager =
-            context?.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
-        notificationManager.notify(notificationId , builder?.build())
+        return builder!!
     }
+
+
+
+
 }

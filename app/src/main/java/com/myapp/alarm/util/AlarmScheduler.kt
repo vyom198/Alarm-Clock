@@ -4,7 +4,8 @@ import com.myapp.alarm.data.model.Alarm
 
 interface AlarmScheduler {
     fun setAlarm(alarm: Alarm):SchedulerState
-    fun cancelAlarm(id: Int )
+    fun cancelAlarm(alarm: Alarm )
+    fun stopAlarm()
 }
 
 

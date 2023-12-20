@@ -120,6 +120,8 @@ dependencies {
     implementation ("androidx.work:work-runtime-ktx:2.9.0")
     implementation ("androidx.hilt:hilt-work:1.1.0")
 
+    // Moshi - Type Converter
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
     // mockito
     testImplementation ("com.nhaarman.mockitokotlin2:mockito-kotlin:2.0.0")
     testImplementation ("org.mockito:mockito-inline:5.2.0")
