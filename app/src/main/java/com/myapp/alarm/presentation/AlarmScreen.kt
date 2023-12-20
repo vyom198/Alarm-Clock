@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
@@ -91,6 +92,7 @@ fun AlarmScreen(
             if (isGranted){
                 alarm.let {
                     viewmodel.insertAlarm(it)
+                    Log.d("alarmScreen", alarm.id.toString())
                 }
             }
 
@@ -196,6 +198,7 @@ fun AlarmScreen(
                 positiveButton(text = "Ok") {
                         val alarm = Alarm(time = pickedTime, isScheduled = true , isVibrate = true)
                         viewmodel.insertAlarm(alarm)
+                         Log.d("idScreen", alarm.id.toString())
                 }
                 negativeButton(text = "Cancel"){
                     timeDialogState.hide()

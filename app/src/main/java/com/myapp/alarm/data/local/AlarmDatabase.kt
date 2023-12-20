@@ -7,7 +7,7 @@ import androidx.room.TypeConverters
 import com.myapp.alarm.data.model.Alarm
 
 @SuppressLint("NewApi")
-@Database(entities = [Alarm :: class] , version = 1 , exportSchema = false )
+@Database(entities = [Alarm :: class] , version = 4 , exportSchema = false )
 @TypeConverters(Converter::class)
  abstract class AlarmDatabase : RoomDatabase() {
     abstract fun getAlarmDao() : AlarmDao

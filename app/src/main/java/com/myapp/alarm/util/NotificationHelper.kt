@@ -1,5 +1,8 @@
 package com.myapp.alarm.util
 
+import android.app.Notification
+import android.content.Context
+
 interface NotificationHelper {
 
     fun createNotificationChannel (
@@ -10,12 +13,13 @@ interface NotificationHelper {
 
     )
 
-    fun showNotification(
-        channelId: String ,
-       notificationId : Int,
-        title : String,
-        content : String
-    )
+    fun createNotification(
+        channelId: String,
+        notificationId: Long,
+        title: String,
+        content: String,
+        context: Context
+    ): Notification
 
 
 }

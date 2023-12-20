@@ -16,7 +16,7 @@ class UpdateAlarmUsecase@Inject constructor(
                 alarmScheduler.setAlarm(alarm)
 
             }else{
-                alarmScheduler.cancelAlarm(alarm.id)
+                alarmScheduler.cancelAlarm(alarm)
 
             }
            alarmRepo.updateAlarm(alarm)
